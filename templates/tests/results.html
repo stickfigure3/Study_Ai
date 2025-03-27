@@ -1,0 +1,114 @@
+{# templates/tests/results.html #}
+{% extends "base.html" %}
+
+{% block title %}Test Results - {{ attempt.test_definition.title }}{% endblock %}
+
+{% block content %}
+<div class="content-section">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Test Results: {{ attempt.test_definition.title }}</h1>
+            <p class="text-muted">Attempt completed: {{ attempt.timestamp_completed.strftime('%Y-%m-%d %H:%M:%S') if attempt.timestamp_completed else 'N/A' }} UTC</p>
+        </div>
+        <a href="{{ url_for('main.index') }}" class="btn btn-sm btn-outline-secondary">Back to Test List</a>
+    </div>
+
+    <div class="alert alert-info" role="alert">
+        <h4>Attempt Summary</h4>
+        Final Score: <strong>{{ "%.2f" | format(attempt.total_score) }}</strong> out of <strong>{{ "%.1f" | format(attempt.max_possible_score) }}</strong> possible points.
+        {% set score_percent = (attempt.total_score / attempt.max_possible_score * 100) if attempt.max_possible_score > 0 else 0 %}
+        Overall: <strong>{{ "%.1f" | format(score_percent) }}%</strong>
+    </div>
+
+    <h2 class="mt-4 mb-3">Review Your Answers for This Attempt:</h2>
+
+    {% for res_q in results_questions %}
+    {% set question = res_q.definition %} {# Question model object #}
+    {% set details = res_q.attempt_details %} {# Answer model object or None #}
+    <div class="card mb-4">
+        <div class="card-header">
+            Question {{ loop.index }} ({{ question.question_type.replace('_', ' ').title() }})
+        </div>
+        <div class="card-body">
+            <p class="card-text fs-5 mb-3">{{ question.text | safe }}</p>
+
+            {# Display User's Answer and Score/Correctness #}
+            <div class="mb-2">
+                <strong>Your Answer:</strong>
+                {% if details %} {# Check if Answer object exists #}
+                <span class="p-1 rounded
+                            {% if question.question_type == 'free_response' %}bg-light border fst-normal
+                            {% elif details.is_correct %}bg-success-subtle
+                            {% else %}bg-danger-subtle{% endif %}">
+                            {# Display user answer based on type #}
+                            {% if question.question_type == 'multiple_choice' %}
+                                {% set u_idx = details.user_input | int(-1) %}
+                                {% if u_idx >= 0 and u_idx < question.options | length %} {{ question.options[u_idx] }}
+                                {% else %} {{ details.user_input }} (Invalid) {% endif %}
+                            {% else %}
+                                {{ details.user_input }}
+                            {% endif %}
+                         </span>
+                {# Add score/correctness indicator #}
+                {% if question.question_type == 'free_response' %}
+                <span class="badge bg-info ms-1">Score: {{ "%.2f" | format(details.score if details.score is not none else 0.0) }}</span>
+                {% elif details.is_correct %}
+                <span class="text-success ms-1" title="Correct">✓</span>
+                {% else %}
+                <span class="text-danger ms-1" title="Incorrect">✗</span>
+                {% endif %}
+                {% else %}
+                <span class="fst-italic text-muted">Not Answered</span>
+                {% endif %}
+            </div>
+
+            {# Display Correct/Suggested Answer (if applicable) #}
+            {% if details and (details.is_correct == False or question.question_type == 'free_response') %}
+            <div class="mb-3">
+                <strong>{{ 'Correct Answer' if details.is_correct == False else 'Suggested Answer' }}:</strong>
+                <span class="p-1 rounded bg-light border">
+                             {{ question.correct_answer_display }} {# Use property from Question model #}
+                         </span>
+            </div>
+            {% endif %}
+
+            {# Display Explanation #}
+            {% if details and details.explanation %}
+            <div class="explanation-area {% if details.is_correct %}correct{% elif details.is_correct == False %}incorrect{% else %}info{% endif %}" style="display: block;">
+                <strong>Explanation:</strong> {{ details.explanation }}
+            </div>
+            {% elif details %} {# If answered but no explanation #}
+            <div class="explanation-area info" style="display: block;">
+                <strong>Explanation:</strong> Not available.
+            </div>
+            {% endif %}
+
+        </div> {# End card-body #}
+    </div> {# End card #}
+    {% endfor %}
+
+    {# --- History Section --- #}
+    {% if history %}
+    <h3 class="mt-5 mb-3">Previous Attempts for this Test</h3>
+    <ul class="list-group list-group-flush">
+        {% for old_attempt in history %} {# Iterate through Attempt objects #}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+                     <span>
+                         Attempt on {{ old_attempt.timestamp_completed.strftime('%Y-%m-%d %H:%M') }} UTC -
+                         Score: {{ "%.2f" | format(old_attempt.total_score) }} / {{ "%.1f" | format(old_attempt.max_possible_score) }}
+                     </span>
+            <a href="{{ url_for('tests.view_results', attempt_id=old_attempt.id) }}" class="btn btn-sm btn-outline-secondary">View Details</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+
+    <div class="mt-4 text-center">
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary me-2">Back to Home</a>
+        {# Link to start a new attempt of the same test definition #}
+        <a href="{{ url_for('tests.start_attempt', test_id=test_id) }}" class="btn btn-success">Restart Test</a>
+    </div>
+
+</div>
+{% endblock %}

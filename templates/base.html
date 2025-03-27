@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Study Buddy{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    {# Link to your static CSS if you have one #}
+    {# <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"> #}
+
+    {# --- Custom Theme CSS --- #}
+    {% if session.get('custom_css') %}
+    <style id="custom-theme-style">
+        {{ session['custom_css'] | safe }}
+    </style>
+    {% endif %}
+    {# --- End Custom Theme CSS --- #}
+
+    <style>
+        /* Base styles */
+        body { padding-top: 5rem; background-color: #f8f9fa; /* Light gray default */}
+        .flash-message { margin-top: 1rem; }
+        .hint-area, .explanation-area {
+            font-style: italic; margin-top: 0.5rem; padding: 0.75rem 1rem;
+            background-color: #e9ecef; border: 1px solid #dee2e6; border-radius: 0.25rem;
+            display: none; /* Initially hidden */
+        }
+        .explanation-area { font-style: normal; border-left-width: 5px; }
+        .explanation-area.correct { border-left-color: var(--bs-success, #198754); background-color: #d1e7dd; }
+        .explanation-area.incorrect { border-left-color: var(--bs-danger, #dc3545); background-color: #f8d7da; }
+        .explanation-area.info { border-left-color: var(--bs-info, #0dcaf0); background-color: #cff4fc; }
+        .spinner-border-sm { width: 0.8rem; height: 0.8rem; }
+        .content-section { background: #ffffff; padding: 20px 20px; border: 1px solid #dddddd; border-radius: 3px; margin-bottom: 20px; }
+        .form-control:focus { box-shadow: none; border-color: #ced4da; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">Study Buddy</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}">Home</a>
+                </li>
+                {% if current_user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'tests.generate_test' %}active{% endif %}" href="{{ url_for('tests.generate_test') }}">New Test</a>
+                </li>
+                {% endif %}
+            </ul>
+            <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+                {% if current_user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ current_user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item {% if request.endpoint == 'settings.account_settings' %}active{% endif %}" href="{{ url_for('settings.account_settings') }}">Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'auth.login' %}active{% endif %}" href="{{ url_for('auth.login') }}">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'auth.register' %}active{% endif %}" href="{{ url_for('auth.register') }}">Register</a>
+                </li>
+                {% endif %}
+                <li class="nav-item ms-2">
+                    {% if session.get('custom_css') %}
+                    <span class="badge bg-info mt-2">Theme Active</span>
+                    {% else %}
+                    <span class="badge bg-secondary mt-2">Default Theme</span>
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show flash-message" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

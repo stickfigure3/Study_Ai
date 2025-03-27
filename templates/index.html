@@ -1,0 +1,65 @@
+{# templates/index.html #}
+{% extends "base.html" %}
+
+{% block title %}Your Tests{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    {# Check if user is authenticated before showing their name #}
+    {% if current_user.is_authenticated %}
+    <h1>{{ current_user.username }}'s Study Tests</h1>
+    {% else %}
+    <h1>Study Tests</h1> {# Fallback title if somehow accessed without login #}
+    {% endif %}
+    {# Link to generate a new test definition #}
+    <a href="{{ url_for('tests.generate_test') }}" class="btn btn-success">Create New Test</a>
+</div>
+
+<div class="content-section">
+    {% if tests %} {# Check if the 'tests' list passed from the route is not empty #}
+    <ul class="list-group">
+        {% for test in tests %} {# Loop through each test dictionary in the 'tests' list #}
+        <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+            {# Test Information Section #}
+            <div class="me-3 mb-2 mb-md-0"> {# Margin for spacing, handle wrapping #}
+                <h5 class="mb-1">{{ test.title }}</h5> {# Use the 'title' from the dictionary #}
+                <small class="text-muted">
+                    Generated: {{ test.timestamp.strftime('%Y-%m-%d %H:%M') }} UTC | {# Format timestamp #}
+                    {{ test.question_count }} questions | {# Use 'question_count' #}
+                    Attempts: {{ test.attempt_count }} {# Use 'attempt_count' #}
+                </small>
+                {# Display Best Score if available #}
+                {% if test.best_score is not none %}
+                <br>
+                <span class="fst-italic text-info"> {# Changed color for visibility #}
+                                Best Score: {{ "%.1f" | format(test.best_score) }} / {{ "%.1f" | format(test.max_possible_score) }}
+                                {# Calculate percentage safely #}
+                                {% set percent = (test.best_score / test.max_possible_score * 100) if test.max_possible_score and test.max_possible_score > 0 else 0 %}
+                                ({{ "%.1f" | format(percent) }}%)
+                            </span>
+                {% endif %}
+            </div>
+
+            {# Action Button Section #}
+            <div class="ms-md-auto"> {# Push button to the right on medium+ screens #}
+                {# Link to start a new attempt for this test definition, using test.id #}
+                <a href="{{ url_for('tests.start_attempt', test_id=test.id) }}" class="btn btn-sm btn-primary">
+                    {# Change button text based on whether attempts exist #}
+                    {% if test.attempt_count > 0 %}Restart Test{% else %}Start Test{% endif %}
+                </a>
+                {# Optional: Link to view history (requires a dedicated history route/template) #}
+                {# {% if test.attempt_count > 0 %}
+                <a href="{{ url_for('tests.view_history', test_id=test.id) }}" class="btn btn-sm btn-outline-secondary ms-1">View History</a>
+                {% endif %} #}
+            </div>
+        </li>
+        {% endfor %} {# End of loop through tests #}
+    </ul>
+    {% else %} {# If the 'tests' list is empty #}
+    <div class="text-center mt-4">
+        <p>You haven't generated any tests yet.</p>
+        <a href="{{ url_for('tests.generate_test') }}" class="btn btn-primary">Create Your First Test</a>
+    </div>
+    {% endif %} {# End of check if tests exist #}
+</div>
+{% endblock %}

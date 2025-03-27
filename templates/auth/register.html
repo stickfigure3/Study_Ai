@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from 'includes/_formhelpers.html' import render_field %} {# Optional: For cleaner forms #}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="content-section">
+            <form method="POST" action="{{ url_for('auth.register') }}">
+                {{ form.hidden_tag() }} {# CSRF token #}
+                <fieldset class="form-group">
+                    <legend class="border-bottom mb-4">Join Today</legend>
+                    <div class="mb-3">
+                        {{ render_field(form.username, class="form-control form-control-lg") }}
+                    </div>
+                    {# Add email field here if using #}
+                    {# <div class="mb-3">
+                    {{ render_field(form.email, class="form-control form-control-lg") }}
+                </div> #}
+                    <div class="mb-3">
+                        {{ render_field(form.password, class="form-control form-control-lg") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ render_field(form.password2, class="form-control form-control-lg") }}
+                    </div>
+                </fieldset>
+                <div class="form-group mb-3">
+                    {{ form.submit(class="btn btn-outline-info") }}
+                </div>
+            </form>
+            <div class="border-top pt-3">
+                <small class="text-muted">
+                    Already Have An Account? <a class="ml-2" href="{{ url_for('auth.login') }}">Sign In</a>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

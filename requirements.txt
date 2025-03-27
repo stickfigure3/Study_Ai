@@ -1,0 +1,12 @@
+Flask
+openai
+PyPDF2
+python-dotenv
+requests
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Login
+Flask-WTF
+psycopg2-binary # For PostgreSQL
+cryptography
+gunicorn # For production server

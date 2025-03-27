@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from 'includes/_formhelpers.html' import render_field %} {# Optional: For cleaner forms #}
+
+{% block title %}Generate New Test{% endblock %}
+
+{% block content %}
+<div class="content-section">
+    <form method="POST" action="{{ url_for('tests.generate_test') }}" enctype="multipart/form-data" id="generate-form">
+        {{ form.hidden_tag() }} {# CSRF token #}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Create a New Study Test</legend>
+            <p class="lead">Upload a PDF or paste text below to generate study questions using AI.</p>
+
+            <div class="mb-3">
+                {{ render_field(form.title, class="form-control", placeholder="Optional: Give your test a title") }}
+            </div>
+
+            <div class="mb-3">
+                {{ form.text_input.label(class="form-label") }}
+                {{ form.text_input(class="form-control", rows="10") }}
+                {% if form.text_input.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.text_input.errors %}<span>{{ error }}</span>{% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.pdf_file.label(class="form-label") }}
+                {{ form.pdf_file(class="form-control") }}
+                {% if form.pdf_file.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.pdf_file.errors %}<span>{{ error }}</span>{% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ render_field(form.num_questions, class="form-control") }}
+            </div>
+
+        </fieldset>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary btn-lg" id="generate-button">
+                <span id="generate-spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                Generate Questions
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Spinner and validation logic for generate button
+    const form = document.getElementById('generate-form');
+    const button = document.getElementById('generate-button');
+    const spinner = document.getElementById('generate-spinner');
+
+    if (form && button) {
+        form.addEventListener('submit', function(event) {
+            const textInput = document.getElementById('text_input'); // Ensure ID matches form field
+            const fileInput = document.getElementById('pdf_file'); // Ensure ID matches form field
+
+            // Check if WTForms validation already caught the error
+            if (form.classList.contains('was-validated') && !form.checkValidity()) {
+                // Let browser/WTForms handle display if standard validation failed
+                return;
+            }
+
+            // Custom check if WTForms didn't catch it (e.g., if validators=[Optional()])
+            let hasTextInput = textInput && textInput.value.trim() !== '';
+            let hasFileInput = fileInput && fileInput.files && fileInput.files.length > 0;
+
+            if (!hasTextInput && !hasFileInput) {
+                alert('Please paste text or upload a PDF file.');
+                // Optionally add custom error display
+                event.preventDefault();
+                return;
+            }
+
+            button.disabled = true;
+            if(spinner) spinner.style.display = 'inline-block';
+            const buttonTextNode = button.childNodes[button.childNodes.length - 1];
+            if(buttonTextNode) buttonTextNode.nodeValue = ' Generating...';
+        });
+    }
+
+    // Optional: Clear other input if one is used
+    const textInput = document.getElementById('text_input');
+    const fileInput = document.getElementById('pdf_file');
+    if(textInput) textInput.addEventListener('input', () => { if (textInput.value.trim() !== '' && fileInput) fileInput.value = ''; });
+    if(fileInput) fileInput.addEventListener('change', () => { if (fileInput.files.length > 0 && textInput) textInput.value = ''; });
+</script>
+{% endblock %}

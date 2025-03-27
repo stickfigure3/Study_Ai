@@ -1,0 +1,23 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - '# Install dependencies'
+        - pip install --upgrade pip
+        - pip install -r requirements.txt
+        - '# Run database migrations (if applicable and safe in build)'
+        - '# export FLASK_APP=app.py'
+        - '# flask db upgrade' # Be careful running migrations automatically
+frontend: # Amplify requires a frontend section, even if minimal
+  phases:
+    preBuild:
+      commands: []
+    build:
+      commands: []
+  artifacts:
+    baseDirectory: / # Adjust if you have frontend build output
+    files:
+      - '**/*'
+  cache:
+    paths: []

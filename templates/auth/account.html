@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from 'includes/_formhelpers.html' import render_field %} {# Optional: For cleaner forms #}
+
+{% block title %}Account Settings{% endblock %}
+
+{% block content %}
+<div class="content-section">
+    <h2 class="border-bottom mb-4">Account Settings</h2>
+
+    {# --- API Key Section --- #}
+    <form method="POST" action="{{ url_for('settings.account_settings') }}">
+        {{ settings_form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="h5">OpenAI API Key</legend>
+            <p>Status: <span class="badge {% if api_key_status == 'Set' %}bg-success{% else %}bg-warning text-dark{% endif %}">{{ api_key_status }}</span></p>
+            <div class="mb-3">
+                {{ settings_form.api_key.label(class="form-label") }}
+                {{ settings_form.api_key(class="form-control", placeholder="Enter new key (e.g., sk-...) or leave blank to clear") }}
+                {% if settings_form.api_key.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in settings_form.api_key.errors %}<span>{{ error }}</span>{% endfor %}
+                </div>
+                {% endif %}
+                <div class="form-text">Your API key is stored encrypted. Enter a new key to update, or leave blank and submit to remove the current key. You can find your key on the <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI website</a>.</div>
+            </div>
+        </fieldset>
+        <div class="form-group mb-4">
+            {{ settings_form.submit_api_key(class="btn btn-primary") }}
+        </div>
+    </form>
+
+    <hr>
+
+    {# --- Theme Section --- #}
+    <form method="POST" action="{{ url_for('main.generate_theme') }}" id="theme-form">
+        {{ theme_form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="h5">Generate CSS Theme (Session)</legend>
+            <p class="text-muted">Describe the visual theme you want (e.g., "dark mode with blue accents", "minimalist light theme"). The AI will generate CSS, which will be applied for your current browser session.</p>
+            <div class="mb-3">
+                {{ render_field(theme_form.theme_description, class="form-control", placeholder="e.g., dark mode, ocean blue, professional gray") }}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            <button type="submit" class="btn btn-secondary" id="theme-button" name="submit_theme"> {# Added name attribute #}
+                <span id="theme-spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                Generate Theme
+            </button>
+            <a href="{{ url_for('main.clear_theme') }}" class="btn btn-outline-secondary ms-2">Reset to Default Theme</a>
+        </div>
+    </form>
+    {% if session.get('custom_css') %}
+    <div class="mt-3">
+        <p>Current custom theme is active. Generated CSS:</p>
+        <pre style="max-height: 200px; overflow-y: auto; background-color: #e9ecef; padding: 10px; border-radius: 5px;"><code>{{ session['custom_css'] }}</code></pre>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Spinner for theme generation button
+    const themeForm = document.getElementById('theme-form');
+    const themeButton = document.getElementById('theme-button');
+    const themeSpinner = document.getElementById('theme-spinner');
+
+    if (themeForm && themeButton) {
+        themeForm.addEventListener('submit', function() {
+            // Basic check if description is empty
+            const themeDescInput = document.getElementById('theme_description');
+            if (themeDescInput && themeDescInput.value.trim() === '') {
+                alert('Please enter a theme description.');
+                event.preventDefault(); // Stop submission
+                return;
+            }
+            themeButton.disabled = true;
+            if(themeSpinner) themeSpinner.style.display = 'inline-block';
+            const buttonTextNode = themeButton.childNodes[themeButton.childNodes.length - 1];
+            if(buttonTextNode) buttonTextNode.nodeValue = ' Generating...';
+        });
+    }
+</script>
+{% endblock %}

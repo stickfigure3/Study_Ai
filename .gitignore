@@ -1,0 +1,77 @@
+# --- Virtual Environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Instance folder (often contains local DB) ---
+instance/
+
+# --- Byte-compiled / optimized / DLL files ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# --- Databases ---
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal # SQLite journals
+
+# --- Secrets / Environment Variables ---
+# IMPORTANT: Never commit your .env file!
+.env
+*.env
+
+# --- OS generated files ---
+.DS_Store
+Thumbs.db
+
+# --- Log files ---
+*.log
+logs/
+*.log.*
+
+# --- IDE / Editor specific files ---
+.idea/          # JetBrains IDEs (PyCharm, IntelliJ, etc.)
+.vscode/        # VSCode
+*.sublime-project
+*.sublime-workspace
+
+# --- Project specific (from user input) ---
+# Assuming 'codebuddy' is a directory you want to ignore
+codebuddy/
+
+# --- Output files ---
+code_dump.txt
+
+# --- Migrations ---
+# Generally, the 'migrations' directory SHOULD be committed to version control
+# so that schema history is tracked and deployable.
+# Only uncomment the line below if you have a specific reason NOT to track migrations.
+# migrations/
+
+# --- Distribution / packaging ---
+dist/
+build/
+*.egg-info/
+*.egg
+wheels/
+*.tar.gz
+*.whl
+
+# --- Test output / Coverage reports ---
+htmlcov/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# --- Other ---
+# Add any other project-specific files or directories below
