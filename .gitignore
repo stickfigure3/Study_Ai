@@ -42,7 +42,7 @@ logs/
 
 # --- Project specific (from user input) ---
 # Assuming 'codebuddy' is a directory you want to ignore
-codebuddy/
+/.codebuddy/
 
 # --- Output files ---
 code_dump.txt
@@ -75,3 +75,4 @@ coverage.xml
 
 # --- Other ---
 # Add any other project-specific files or directories below
+/.idea/
