@@ -1,11 +1,33 @@
 version: 1.0
-runtime: python311 # Or python311 if you prefer
+runtime: python311 # Or python310 if you used that elsewhere
+
 build:
   commands:
+    # Optional: Commands BEFORE build (e.g., install system packages)
+    # pre-build:
+    #   - yum update -y
     build:
+      # Main build commands (install dependencies)
       - pip install -r requirements.txt
-      # - flask db upgrade # Optional migration step
+    # Optional: Commands AFTER build (e.g., run migrations - requires DB access)
+    # post-build:
+    #   - export FLASK_APP=app.py
+    #   - flask db upgrade
+
 run:
+  # The command to start your application
   command: gunicorn --bind 0.0.0.0:8080 --workers 4 --log-level info app:app
-  port: 8080
-# ...
+  # --- Network configuration section ---
+  network:
+    # The port your application listens on INSIDE the container
+    port: 8080
+  # Optional: Define environment variables specific to the run phase here
+  # env:
+  #   - name: EXAMPLE_VAR
+  #     value: example_value
+
+# Optional: Health check configuration
+# healthcheck:
+#   path: /health
+#   interval: 10
+#   timeout: 5
