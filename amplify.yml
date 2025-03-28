@@ -5,7 +5,7 @@ applications:
         build:
           commands:
             # Define variables for clarity (replace 'study-app-image' if you used a different name)
-            - REPOSITORY_NAME=study-app-image
+            - REPOSITORY_NAME=study_ai
             - IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME
             # Define tags - using branch+commit for specific version, and 'latest'
             - IMAGE_TAG_VERSION=$AWS_BRANCH-$AWS_COMMIT_ID
