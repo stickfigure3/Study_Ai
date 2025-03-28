@@ -1,23 +1,34 @@
 version: 1
-backend:
-  phases:
-    build:
-      commands:
-        - '# Install dependencies'
-        - pip install --upgrade pip
-        - pip install -r requirements.txt
-        - '# Run database migrations (if applicable and safe in build)'
-        - '# export FLASK_APP=app.py'
-        - '# flask db upgrade' # Be careful running migrations automatically
-frontend: # Amplify requires a frontend section, even if minimal
-  phases:
-    preBuild:
-      commands: []
-    build:
-      commands: []
-  artifacts:
-    baseDirectory: / # Adjust if you have frontend build output
-    files:
-      - '**/*'
-  cache:
-    paths: []
+applications:
+  - backend:
+      phases:
+        build:
+          commands:
+            # Define variables for clarity (replace 'study-app-image' if you used a different name)
+            - REPOSITORY_NAME=study-app-image
+            - IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME
+            # Define tags - using branch+commit for specific version, and 'latest'
+            - IMAGE_TAG_VERSION=$AWS_BRANCH-$AWS_COMMIT_ID
+            - IMAGE_TAG_LATEST=latest
+
+            - echo "Logging in to Amazon ECR..."
+            - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+            - echo "Building the Docker image..."
+            # Build the image locally first
+            - docker build -t $REPOSITORY_NAME .
+
+            - echo "Tagging the Docker image for ECR..."
+            # Tag with the specific version tag
+            - docker tag $REPOSITORY_NAME:latest $IMAGE_URI:$IMAGE_TAG_VERSION
+            # Tag with 'latest'
+            - docker tag $REPOSITORY_NAME:latest $IMAGE_URI:$IMAGE_TAG_LATEST
+
+            - echo "Pushing the Docker image to ECR..."
+            # Push the version tag
+            - docker push $IMAGE_URI:$IMAGE_TAG_VERSION
+            # Push the 'latest' tag
+            - docker push $IMAGE_URI:$IMAGE_TAG_LATEST
+    # frontend: {} # Still needed by Amplify structure even if empty
+    # artifacts: {}
+    # cache: {}
