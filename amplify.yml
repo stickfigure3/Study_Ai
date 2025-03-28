@@ -1,26 +1,21 @@
 version: 1
-# Explicitly define the platform - might help Amplify's interpretation
-platform: linux
-applications:
-  - appRoot: . # Root of the application code within the repository
-    backend:
+platform: linux # Top level
+applications: # Top level
+  - appRoot: .
+    backend: # Indented under applications list item
       phases:
-        # Keep build commands minimal or empty if Amplify handles it via 'image'
         build:
           commands:
             - echo "Using Amplify container build via 'image' config below."
-    # --- Image section to configure container build ---
-    image:
-      # Path to the Dockerfile relative to the appRoot
+    image: # Indented under applications list item (same level as backend)
       dockerfilePath: Dockerfile
-      # ECR repository name (must exist in your account/region)
-      repository: study_ai # Ensure this matches your ECR repo name
-  # --- Minimal Frontend Section (Required by schema) ---
-  frontend:
-    phases:
-      build:
-        commands: [] # No frontend build commands
-    artifacts:
-      files: [] # No frontend artifacts
-    cache:
-      paths: [] # No frontend cache needed
+      repository: study-app-image # Ensure this matches your ECR repo name
+# --- Minimal Frontend Section (Required by schema) ---
+frontend: # <--- NO INDENTATION HERE (Top level)
+  phases: # Indented under frontend
+    build: # Indented under phases
+      commands: []
+  artifacts: # Indented under frontend
+    files: []
+  cache: # Indented under frontend
+    paths: []
