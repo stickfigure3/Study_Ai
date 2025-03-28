@@ -1,21 +1,28 @@
 version: 1
-platform: linux # Top level
-applications: # Top level
-  - appRoot: .
-    backend: # Indented under applications list item
-      phases:
-        build:
-          commands:
-            - echo "Using Amplify container build via 'image' config below."
-    image: # Indented under applications list item (same level as backend)
-      dockerfilePath: Dockerfile
-      repository: study-app-image # Ensure this matches your ECR repo name
-# --- Minimal Frontend Section (Required by schema) ---
-frontend: # <--- NO INDENTATION HERE (Top level)
-  phases: # Indented under frontend
-    build: # Indented under phases
-      commands: []
-  artifacts: # Indented under frontend
-    files: []
-  cache: # Indented under frontend
-    paths: []
+# No platform key needed here usually
+backend: # Use top-level backend key
+  phases:
+    build:
+      commands:
+        # Define variables (replace 'study-app-image')
+        - REPOSITORY_NAME=study_ai
+        - IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME
+        - IMAGE_TAG_VERSION=$AWS_BRANCH-$AWS_COMMIT_ID
+        - IMAGE_TAG_LATEST=latest
+
+        - echo "Logging in to Amazon ECR..."
+        - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+        - echo "Building the Docker image..."
+        # Assuming Dockerfile is at the root of the repository
+        - docker build -t $REPOSITORY_NAME .
+
+        - echo "Tagging the Docker image for ECR..."
+        - docker tag $REPOSITORY_NAME:latest $IMAGE_URI:$IMAGE_TAG_VERSION
+        - docker tag $REPOSITORY_NAME:latest $IMAGE_URI:$IMAGE_TAG_LATEST
+
+        - echo "Pushing the Docker image to ECR..."
+        - docker push $IMAGE_URI:$IMAGE_TAG_VERSION
+        - docker push $IMAGE_URI:$IMAGE_TAG_LATEST
+# NO frontend section needed in this structure
+# NO applications section needed
