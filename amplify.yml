@@ -29,6 +29,16 @@ applications:
             - docker push $IMAGE_URI:$IMAGE_TAG_VERSION
             # Push the 'latest' tag
             - docker push $IMAGE_URI:$IMAGE_TAG_LATEST
-    # frontend: {} # Still needed by Amplify structure even if empty
-    # artifacts: {}
-    # cache: {}
+    # ---> ADD THIS MINIMAL FRONTEND SECTION <---
+    frontend:
+      phases:
+        # No build steps needed for frontend if it's just backend
+        build:
+          commands: []
+      artifacts:
+        # No frontend artifacts to deploy
+        baseDirectory: / # Or any placeholder directory that exists but is empty
+        files: []
+      cache:
+        paths: []
+    # ---> END OF ADDED FRONTEND SECTION <---
