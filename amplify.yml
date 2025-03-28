@@ -1,44 +1,35 @@
 version: 1
 applications:
-  - backend:
+  - appRoot: . # Specify the root of your application code relative to the repo root
+    backend:
       phases:
+        # Build phase is now handled by Amplify's container build process below
+        # You might only need preBuild for installing non-Python dependencies if any
+        # preBuild:
+        #   commands:
+        #     - yum update -y # Example for Amazon Linux
+        #     - yum install -y postgresql-devel # Example if psycopg2 needed system libs
         build:
           commands:
-            # Define variables for clarity (replace 'study-app-image' if you used a different name)
-            - REPOSITORY_NAME=study_ai
-            - IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME
-            # Define tags - using branch+commit for specific version, and 'latest'
-            - IMAGE_TAG_VERSION=$AWS_BRANCH-$AWS_COMMIT_ID
-            - IMAGE_TAG_LATEST=latest
-
-            - echo "Logging in to Amazon ECR..."
-            - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-
-            - echo "Building the Docker image..."
-            # Build the image locally first
-            - docker build -t $REPOSITORY_NAME .
-
-            - echo "Tagging the Docker image for ECR..."
-            # Tag with the specific version tag
-            - docker tag $REPOSITORY_NAME:latest $IMAGE_URI:$IMAGE_TAG_VERSION
-            # Tag with 'latest'
-            - docker tag $REPOSITORY_NAME:latest $IMAGE_URI:$IMAGE_TAG_LATEST
-
-            - echo "Pushing the Docker image to ECR..."
-            # Push the version tag
-            - docker push $IMAGE_URI:$IMAGE_TAG_VERSION
-            # Push the 'latest' tag
-            - docker push $IMAGE_URI:$IMAGE_TAG_LATEST
-    # ---> ADD THIS MINIMAL FRONTEND SECTION <---
-    frontend:
-      phases:
-        # No build steps needed for frontend if it's just backend
-        build:
-          commands: []
-      artifacts:
-        # No frontend artifacts to deploy
-        baseDirectory: / # Or any placeholder directory that exists but is empty
-        files: []
-      cache:
-        paths: []
-    # ---> END OF ADDED FRONTEND SECTION <---
+            - echo "Amplify will handle the Docker build and push based on 'image' settings."
+            # You could potentially run migrations here if needed and configured securely
+            # - export FLASK_APP=app.py
+            # - flask db upgrade # Requires DB connection configured in build env! Risky.
+    # --- Add the 'image' section to configure container build ---
+    image:
+      # Path to the Dockerfile relative to the appRoot
+      dockerfilePath: Dockerfile
+      # ECR repository name (must exist in your account/region)
+      repository: study_ai # Make sure this matches your ECR repo name
+      # Optional: Specify build arguments if your Dockerfile uses ARG
+      # buildArgs:
+      #   key: value
+frontend:
+  phases:
+    build:
+      commands: []
+  artifacts:
+    baseDirectory: /
+    files: []
+  cache:
+    paths: []
