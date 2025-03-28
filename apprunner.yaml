@@ -1,5 +1,5 @@
 version: 1.0
-runtime: python310 # Or python311 if you prefer
+runtime: python311 # Or python311 if you prefer
 build:
   commands:
     build:
