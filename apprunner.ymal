@@ -1,0 +1,11 @@
+version: 1.0
+runtime: python310 # Or python311 if you prefer
+build:
+  commands:
+    build:
+      - pip install -r requirements.txt
+      # - flask db upgrade # Optional migration step
+run:
+  command: gunicorn --bind 0.0.0.0:8080 --workers 4 --log-level info app:app
+  port: 8080
+# ...

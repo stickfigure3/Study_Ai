@@ -1,0 +1,29 @@
+# Use an official Python runtime as a parent image
+FROM python:3.10-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV FLASK_APP=app.py
+ENV FLASK_DEBUG=0 # Ensure debug is off for production builds
+
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies if needed (e.g., for psycopg2)
+# RUN apt-get update && apt-get install -y --no-install-recommends gcc libpq-dev && rm -rf /var/lib/apt/lists/*
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy project code
+COPY . .
+
+# Expose the port App Runner expects (default is 8080)
+EXPOSE 8080
+
+# Command to run the application using Gunicorn
+# Binds to all interfaces on the specified port (default 8080 if PORT not set)
+CMD ["gunicorn", "--bind", "0.0.0.0:${PORT:-8080}", "--workers", "4", "--log-level", "info", "app:app"]
